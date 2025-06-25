@@ -1,0 +1,13 @@
+CREATE USER lixeiro WITH PASSWORD '123';
+
+CREATE DATABASE lixeira;
+GRANT ALL PRIVILEGES ON DATABASE lixeira TO lixeiro;
+
+\c lixeira;
+
+CREATE TABLE IF NOT EXISTS estacao(
+    id CHAR(17) PRIMARY KEY,
+    status VARCHAR(10) NOT NULL
+);
+
+GRANT ALL PRIVILEGES ON TABLE estacao TO lixeiro;
