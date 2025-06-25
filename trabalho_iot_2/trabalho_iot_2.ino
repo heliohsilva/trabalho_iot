@@ -2,8 +2,8 @@
 #include <SimplePgSQL.h>
 #include "esp_mac.h"
 
-const char* WIFI_SSID = "Rep Tocaia_2.4";
-const char* WIFI_PASSWORD = "reptocaia21a";
+const char* WIFI_SSID = "";
+const char* WIFI_PASSWORD = "";
 
 const char *host = "api.thingspeak.com";        // This should not be changed
 const int httpPort = 80;                        // This should not be changed
