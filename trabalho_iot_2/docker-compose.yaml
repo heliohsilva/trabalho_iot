@@ -1,0 +1,45 @@
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=admin
+    networks:
+      - backend-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mqtt:
+    image: hivemq/hivemq4
+    ports:
+      - "8080:8080"
+      - "1883:1883"
+    networks:
+      - backend-network
+
+  be:
+    build:
+      context: ./be
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - GO_ENV=production
+      - PORT=8000
+    depends_on:
+      - db
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

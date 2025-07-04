@@ -3,7 +3,7 @@ import React, {useEffect, useState } from 'react';
 const BoxGrid = () => {
     const [items, setItems] = useState([]);
 
-    const API_URL = 'http://127.0.0.1:8080/estacoes';
+    const API_URL = 'http://127.0.0.1:8000/estacoes';
 
     const fetchData = async () => {
         try {
@@ -28,6 +28,54 @@ const BoxGrid = () => {
     }, []);
 
 
+    const handleEsvaziar = async (id, status) => {
+        try {
+            const response = await fetch(`http://0.0.0.0:8000/estacao/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id: id,
+                status: 'empty'
+            }),
+            });
+
+            if (response.ok) {
+                console.log('Successfully updated!');
+
+            } else {
+                console.error('Failed to update');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+        fetchData();
+    };
+    
+
+    const handleDelete = async (id) => {
+        try {
+            const response = await fetch(`http://0.0.0.0:8000/estacao/${id}`, {
+                method: 'DELETE', 
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            if (response.ok) {
+                console.log('Successfully updated!');
+
+            } else {
+                console.error('Failed to update');
+            }
+        }catch (error){
+            console.error('Error: ', error);
+        }
+
+        fetchData();
+    }
+
+
     return (
         <div className="p-8">  
             <h1 className="text-4xl font-bold mb-4">Estações</h1>
@@ -38,7 +86,16 @@ const BoxGrid = () => {
                     item.status === 'full' ? 'border-red-500' : 'border-green-500'}`}>
                         <h2 className="text-lg font-semibold mb-2">{item.id}</h2>
                         <p className="text-gray-600">{item.status}</p>
+                        <button className="mt-4 text-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-5 rounded"
+                                onClick={() => handleEsvaziar(item.id)}>
+                                Esvaziar
+                        </button>
+                        <button className="mt-4 ml-2 text-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-5 rounded"
+                                onClick={() => handleDelete(item.id)}>
+                                Deletar estação
+                        </button>
                     </div>
+                    
                 ))}
             </div>
         </div>

@@ -3,15 +3,17 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/gorilla/mux"
 )
 
 type Estacao struct {
-	ID     string `json:"id"`     // MAC address
-	Status string `json:"status"` // e.g., "full", "empty"
+	ID     string `json:"id"`
+	Status string `json:"status"`
 }
 
 func CreateEstacao(w http.ResponseWriter, r *http.Request) {
@@ -115,4 +117,69 @@ func DeleteEstacao(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func messageHandler(client mqtt.Client, msg mqtt.Message) {
+
+	estacoes, _ := list_all_stations()
+
+	payload := string(msg.Payload())
+	topic := msg.Topic()
+	fmt.Printf("Received message: %s from topic: %s\n", payload, topic)
+
+	var e Estacao
+
+	err := json.Unmarshal(msg.Payload(), &e)
+	if err != nil {
+		log.Println("Error parsing JSON payload: ", err)
+		return
+	}
+
+	var is_in = false
+
+	for i := 0; i < len(estacoes); i++ {
+		if estacoes[i] == e.ID {
+			is_in = true
+		}
+	}
+
+	var erro error
+
+	if !is_in {
+		_, erro = DB.Exec(`INSERT INTO estacao (id, status) VALUES ($1, $2)`, e.ID, e.Status)
+	} else {
+
+		_, erro = DB.Exec(`UPDATE estacao SET status = $1 WHERE id = $2`, e.Status, e.ID)
+	}
+
+	if erro != nil {
+		log.Println("Update error:", erro)
+		return
+	}
+}
+
+func list_all_stations() ([]string, error) {
+
+	rows, err := DB.Query("SELECT id FROM estacao")
+	if err != nil {
+		log.Println("Query error:", err)
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var estacoes []string
+
+	for rows.Next() {
+		var e string
+
+		if err := rows.Scan(&e); err != nil {
+			log.Println("Row scan error:", err)
+			return nil, err
+		}
+
+		estacoes = append(estacoes, e)
+	}
+
+	return estacoes, nil
 }

@@ -1,22 +1,28 @@
 #include <WiFi.h>
-#include <SimplePgSQL.h>
 #include "esp_mac.h"
+#include <PubSubClient.h>
+#include <ArduinoJson.h>
 
-const char* WIFI_SSID = "";
-const char* WIFI_PASSWORD = "";
+const char* WIFI_SSID = "Rep Tocaia_2.4";
+const char* WIFI_PASSWORD = "reptocaia21a";
 
-const char *host = "api.thingspeak.com";        // This should not be changed
-const int httpPort = 80;                        // This should not be changed
-const String channelID = "6";             
+const char *host = "api.thingspeak.com";
+const int httpPort = 80;
+const String channelID = "6";
 
-IPAddress PGIP(192,168,2,116);
-int DB_PORT = 5432;
-const char* DB_USER = "lixeiro";
-const char* DB_PASS = "123";
-const char* DB_NAME = "lixeira";
+const char* mqtt_broker = "192.168.2.118";
+const int mqtt_port = 1883;
+const char* mqtt_user = "heliohsilva";
+const char* mqtt_pass = "123";
+const char* mqtt_topic = "sensor/lixeira";
+
 
 const int trigPin = 7;
 const int echoPin = 6;
+
+WiFiClient espclient;
+
+PubSubClient client(espclient);
 
 #define SOUND_SPEED 0.034
 
@@ -25,16 +31,24 @@ typedef struct {
   String status;
 } Data;
 
+Data data;
+
 long duration;
 float distanceCm;
 
-WiFiClient client;
-
-char buffer[1024];
-
-PGconnection conn(&client, 0, 1024, buffer);
-
-Data data;
+void reconnect(){
+  while (!client.connected()){
+    Serial.println("Connecting to");
+    Serial.println(mqtt_broker);
+    if(client.connect("koikoikoi", mqtt_user, mqtt_pass)){
+      Serial.println("Connected to ");
+      Serial.println(mqtt_broker);
+    }else{
+      Serial.println("retrying to connect...");
+      delay(5000);
+    }
+  }
+}  
 
 void setup() {
   Serial.begin(115200); 
@@ -53,15 +67,7 @@ void setup() {
   Serial.println("\nConnected to Wi-Fi!");
   Serial.println(WiFi.localIP());
 
-  conn.setDbLogin(PGIP, DB_USER, DB_PASS, DB_NAME, "utf8", DB_PORT);
-  Serial.print("Connecting to PostgreSQL database...");
-
-  while (conn.status() != CONNECTION_OK) {
-    Serial.print(".");
-    delay(1000);
-  }
-
-  Serial.println("Database connection successful");
+  client.setServer(mqtt_broker, mqtt_port);
 
   data.id = getDefaultMacAddress();
 
@@ -69,18 +75,20 @@ void setup() {
 
 void loop() {
 
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();
+
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
 
-  // Sets the trigPin on HIGH state for 10 micro seconds
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
 
-  // Reads the echoPin, returns the sound wave travel time in microseconds
   duration = pulseIn(echoPin, HIGH);
 
-  // Calculate the distance
   distanceCm = duration * SOUND_SPEED / 2;
 
   Serial.print("Distance: ");
@@ -89,6 +97,9 @@ void loop() {
 
   if (distanceCm < 10){
     data.status = "full";
+
+    sendMessage();
+
   }else {
     data.status = "empty";
   }
@@ -99,8 +110,17 @@ void loop() {
   delay(1000);
 }
 
-void sendToDatabase(String message) {
-  
+void sendMessage(){
+
+   StaticJsonDocument<100> payload;
+   payload["id"] = data.id;
+   payload["status"] = data.status;
+
+   char jsonBuffer[100];
+   serializeJson(payload, jsonBuffer);
+
+   client.publish(mqtt_topic, jsonBuffer);
+   delay(5000);
 }
 
 String getDefaultMacAddress() {
