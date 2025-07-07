@@ -5,8 +5,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRES_PASSWORD=admin
+
     networks:
       - backend-network
     volumes:
@@ -25,15 +24,30 @@ services:
       context: ./be
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
-    environment:
-      - GO_ENV=production
-      - PORT=8000
+      - "7000:7000"
+
     depends_on:
       - db
+      - mqtt
+
     volumes:
       - ./logs:/app/logs
     restart: unless-stopped
+    networks:
+      - backend-network
+
+  fe:
+    build:
+      context: ./fe
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - be
+
+    volumes:
+      - ./fe/:/app/
+
     networks:
       - backend-network
 

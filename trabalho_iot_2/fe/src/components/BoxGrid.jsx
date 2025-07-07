@@ -3,7 +3,7 @@ import React, {useEffect, useState } from 'react';
 const BoxGrid = () => {
     const [items, setItems] = useState([]);
 
-    const API_URL = 'http://127.0.0.1:8000/estacoes';
+    const API_URL = 'http://localhost:7000/estacoes';
 
     const fetchData = async () => {
         try {
@@ -30,7 +30,7 @@ const BoxGrid = () => {
 
     const handleEsvaziar = async (id, status) => {
         try {
-            const response = await fetch(`http://0.0.0.0:8000/estacao/${id}`, {
+            const response = await fetch(`http://localhost:7000/estacao/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ const BoxGrid = () => {
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetch(`http://0.0.0.0:8000/estacao/${id}`, {
+            const response = await fetch(`http://localhost:7000/estacao/${id}`, {
                 method: 'DELETE', 
                 headers: {
                     'Content-Type': 'application/json',

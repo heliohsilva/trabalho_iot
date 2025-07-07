@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	mqttBroker = "tcp://localhost:1883"
+	mqttBroker = "tcp://mqtt:1883"
 	mqttTopic  = "sensor/lixeira"
 )
 
@@ -50,6 +50,6 @@ func main() {
 		AllowCredentials: true,
 	})
 
-	log.Println("API running at http://localhost:8000")
-	log.Fatal(http.ListenAndServe(":8000", c.Handler(r)))
+	log.Println("API running at http://localhost:7000")
+	log.Fatal(http.ListenAndServe(":7000", c.Handler(r)))
 }

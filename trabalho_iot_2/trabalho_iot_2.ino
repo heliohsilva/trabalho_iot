@@ -10,7 +10,7 @@ const char *host = "api.thingspeak.com";
 const int httpPort = 80;
 const String channelID = "6";
 
-const char* mqtt_broker = "192.168.2.118";
+const char* mqtt_broker = "192.168.2.116";
 const int mqtt_port = 1883;
 const char* mqtt_user = "heliohsilva";
 const char* mqtt_pass = "123";
@@ -104,8 +104,9 @@ void loop() {
     data.status = "empty";
   }
 
-  Serial.print(data.status);
-  Serial.print(data.id);
+  Serial.println(data.status);
+  Serial.println(data.id);
+  Serial.print("\n\n");
 
   delay(1000);
 }
