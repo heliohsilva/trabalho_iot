@@ -3,19 +3,18 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
-const char* WIFI_SSID = "Rep Tocaia_2.4";
-const char* WIFI_PASSWORD = "reptocaia21a";
+const char *WIFI_SSID = "Rep Tocaia_2.4";
+const char *WIFI_PASSWORD = "";
 
 const char *host = "api.thingspeak.com";
 const int httpPort = 80;
 const String channelID = "6";
 
-const char* mqtt_broker = "192.168.2.116";
+const char *mqtt_broker = "192.168.2.116";
 const int mqtt_port = 1883;
-const char* mqtt_user = "heliohsilva";
-const char* mqtt_pass = "123";
-const char* mqtt_topic = "sensor/lixeira";
-
+const char *mqtt_user = "heliohsilva";
+const char *mqtt_pass = "123";
+const char *mqtt_topic = "sensor/lixeira";
 
 const int trigPin = 7;
 const int echoPin = 6;
@@ -26,7 +25,8 @@ PubSubClient client(espclient);
 
 #define SOUND_SPEED 0.034
 
-typedef struct {
+typedef struct
+{
   String id;
   String status;
 } Data;
@@ -36,30 +36,37 @@ Data data;
 long duration;
 float distanceCm;
 
-void reconnect(){
-  while (!client.connected()){
+void reconnect()
+{
+  while (!client.connected())
+  {
     Serial.println("Connecting to");
     Serial.println(mqtt_broker);
-    if(client.connect("koikoikoi", mqtt_user, mqtt_pass)){
+    if (client.connect("koikoikoi", mqtt_user, mqtt_pass))
+    {
       Serial.println("Connected to ");
       Serial.println(mqtt_broker);
-    }else{
+    }
+    else
+    {
       Serial.println("retrying to connect...");
       delay(5000);
     }
   }
-}  
+}
 
-void setup() {
-  Serial.begin(115200); 
-  pinMode(trigPin, OUTPUT); 
-  pinMode(echoPin, INPUT); 
+void setup()
+{
+  Serial.begin(115200);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
 
   Serial.print("Connecting to Wi-Fi...");
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     delay(500);
     Serial.print(".");
   }
@@ -70,12 +77,13 @@ void setup() {
   client.setServer(mqtt_broker, mqtt_port);
 
   data.id = getDefaultMacAddress();
-
 }
 
-void loop() {
+void loop()
+{
 
-  if (!client.connected()) {
+  if (!client.connected())
+  {
     reconnect();
   }
   client.loop();
@@ -95,12 +103,14 @@ void loop() {
   Serial.print(distanceCm);
   Serial.println(" cm");
 
-  if (distanceCm < 10){
+  if (distanceCm < 10)
+  {
     data.status = "full";
 
     sendMessage();
-
-  }else {
+  }
+  else
+  {
     data.status = "empty";
   }
 
@@ -111,27 +121,30 @@ void loop() {
   delay(1000);
 }
 
-void sendMessage(){
+void sendMessage()
+{
 
-   StaticJsonDocument<100> payload;
-   payload["id"] = data.id;
-   payload["status"] = data.status;
+  StaticJsonDocument<100> payload;
+  payload["id"] = data.id;
+  payload["status"] = data.status;
 
-   char jsonBuffer[100];
-   serializeJson(payload, jsonBuffer);
+  char jsonBuffer[100];
+  serializeJson(payload, jsonBuffer);
 
-   client.publish(mqtt_topic, jsonBuffer);
-   delay(5000);
+  client.publish(mqtt_topic, jsonBuffer);
+  delay(5000);
 }
 
-String getDefaultMacAddress() {
+String getDefaultMacAddress()
+{
 
   String mac = "";
 
   unsigned char mac_base[6] = {0};
 
-  if (esp_efuse_mac_get_default(mac_base) == ESP_OK) {
-    char buffer[18];  // 6*2 characters for hex + 5 characters for colons + 1 character for null terminator
+  if (esp_efuse_mac_get_default(mac_base) == ESP_OK)
+  {
+    char buffer[18]; // 6*2 characters for hex + 5 characters for colons + 1 character for null terminator
     sprintf(buffer, "%02X:%02X:%02X:%02X:%02X:%02X", mac_base[0], mac_base[1], mac_base[2], mac_base[3], mac_base[4], mac_base[5]);
     mac = buffer;
   }

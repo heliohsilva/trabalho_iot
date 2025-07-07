@@ -42,7 +42,8 @@ static SSD1306Wire  display(0x3c, 500000, SDA_OLED, SCL_OLED, GEOMETRY_128_64, R
 
 // Set the MAC address of the device that will receive the data
 // For example: F4:12:FA:40:64:4C
-const MacAddress peer_mac({0xB0, 0x81, 0x84, 0x9A, 0xD0, 0x10});
+// const MacAddress peer_mac({0xB0, 0x81, 0x84, 0x9A, 0xD0, 0x10});
+const MacAddress peer_mac({0x34, 0xCD, 0xB0, 0x3D, 0xB6, 0xF8});
 
 ESP_NOW_Serial_Class NowSerial(peer_mac, ESPNOW_WIFI_CHANNEL, ESPNOW_WIFI_IF);
 String bufferRecebido = ""; // Para montar valor do potenciômetro recebido
